@@ -1,12 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const getLaundryTip = async (): Promise<string> => {
+  // Explicitly check for the API key. This is a robust way to handle
+  // environments where `process.env` might not be defined or the key is missing.
+  if (typeof process === 'undefined' || !process.env.API_KEY) {
+      console.error("Gemini API key not found. Please set the API_KEY environment variable.");
+      return "AI Tips are currently unavailable. Please ensure the API_KEY is configured correctly.";
+  }
+
   try {
-    // By moving the initialization inside the function, we prevent the app from
-    // crashing on load. The code that might fail (accessing process.env)
-    // is now only executed when the user requests a tip, and it's wrapped
-    // in a try/catch block to handle errors gracefully.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+    // The key is confirmed to exist at this point.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -20,11 +24,7 @@ export const getLaundryTip = async (): Promise<string> => {
     return response.text;
   } catch (error) {
     console.error("Error fetching laundry tip from Gemini:", error);
-    // This will catch both the "process is not defined" ReferenceError
-    // and any errors from the Gemini API client about an invalid/missing key.
-    if (error instanceof Error && (error.name === 'ReferenceError' || error.message.toLowerCase().includes('api key'))) {
-        return "AI Tips are currently unavailable. Please ensure the API_KEY is configured correctly.";
-    }
+    // This catch block now handles errors from the API call itself (e.g., network issues)
     return "Sorry, I couldn't fetch a laundry tip at the moment. Please try again later.";
   }
 };

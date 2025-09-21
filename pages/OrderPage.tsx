@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { MOCK_SERVICES } from '../constants';
 import { SelectedService, OrderStatus } from '../types';
+import { ArrowPathIcon } from '../components/IconComponents';
 
 type OrderStep = 'services' | 'schedule' | 'summary';
 
@@ -25,6 +25,7 @@ const OrderPage: React.FC = () => {
     const [pickupAddress, setPickupAddress] = useState('123 Aba Road, Port Harcourt');
     const [hasExpressDelivery, setHasExpressDelivery] = useState(false);
     const [hasStainTreatment, setHasStainTreatment] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     
     const navigate = useNavigate();
     const { addOrder, user } = useApp();
@@ -54,18 +55,22 @@ const OrderPage: React.FC = () => {
     
     const total = selectedServices.reduce((acc, s) => acc + s.price * s.quantity, 0) + (hasExpressDelivery ? 2000 : 0) + (hasStainTreatment ? 1500 : 0);
 
-    const handleConfirmOrder = () => {
-        const newOrder = addOrder({
-            pickupAddress,
-            pickupDate,
-            pickupTimeSlot,
-            items: selectedServices,
-            total,
-            status: OrderStatus.Pending,
-            hasExpressDelivery,
-            hasStainTreatment,
-        });
-        navigate(`/track/${newOrder.id}`);
+    const handlePayment = () => {
+        setIsProcessingPayment(true);
+        // Simulate API call to payment gateway
+        setTimeout(() => {
+            const newOrder = addOrder({
+                pickupAddress,
+                pickupDate,
+                pickupTimeSlot,
+                items: selectedServices,
+                total,
+                status: OrderStatus.Pending,
+                hasExpressDelivery,
+                hasStainTreatment,
+            });
+            navigate(`/track/${newOrder.id}`);
+        }, 2000);
     };
     
     if (!user) {
@@ -201,12 +206,45 @@ const OrderPage: React.FC = () => {
                                     </div>
                                 </div>
                              </div>
-                             <div className="mt-8 flex justify-between items-center">
-                                <button onClick={() => setStep('schedule')} className="text-slate-600 font-semibold px-6 py-3 rounded-full hover:bg-slate-100 transition-all">
+
+                             {/* Payment Section */}
+                             <div className="mt-8">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment Information</h3>
+                                <div className="space-y-4 p-6 border rounded-lg bg-slate-50">
+                                    <div>
+                                        <label htmlFor="card-number" className="block text-sm font-medium text-slate-700">Card Number</label>
+                                        <input type="text" id="card-number" placeholder="**** **** **** 1234" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-whasha-blue focus:border-whasha-blue sm:text-sm" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="expiry-date" className="block text-sm font-medium text-slate-700">Expiry Date</label>
+                                            <input type="text" id="expiry-date" placeholder="MM/YY" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-whasha-blue focus:border-whasha-blue sm:text-sm" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="cvv" className="block text-sm font-medium text-slate-700">CVV</label>
+                                            <input type="text" id="cvv" placeholder="123" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-whasha-blue focus:border-whasha-blue sm:text-sm" />
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>
+
+                             <div className="mt-8 flex flex-col-reverse sm:flex-row justify-between items-center gap-4">
+                                <button onClick={() => setStep('schedule')} disabled={isProcessingPayment} className="text-slate-600 font-semibold px-6 py-3 rounded-full hover:bg-slate-100 transition-all disabled:text-slate-400 disabled:cursor-not-allowed">
                                     &larr; Back to Schedule
                                 </button>
-                                <button onClick={handleConfirmOrder} className="bg-whasha-green text-white font-semibold px-6 py-3 rounded-full hover:bg-green-600 transition-all shadow-md">
-                                    Confirm & Place Order
+                                <button 
+                                    onClick={handlePayment} 
+                                    disabled={isProcessingPayment}
+                                    className="w-full sm:w-auto bg-whasha-green text-white font-semibold px-8 py-4 rounded-full hover:bg-green-600 transition-all shadow-md disabled:bg-green-400 disabled:cursor-wait flex items-center justify-center"
+                                >
+                                    {isProcessingPayment ? (
+                                        <>
+                                            <ArrowPathIcon className="animate-spin h-5 w-5 mr-3" />
+                                            Processing Payment...
+                                        </>
+                                    ) : (
+                                        `Pay Now ₦${total.toLocaleString()}`
+                                    )}
                                 </button>
                             </div>
                         </div>
