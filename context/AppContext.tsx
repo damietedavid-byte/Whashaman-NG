@@ -5,27 +5,41 @@ import { MOCK_INITIAL_ORDERS, MOCK_USER } from '../constants';
 
 interface AppContextType {
   user: User | null;
+  login: () => void;
+  logout: () => void;
   orders: Order[];
   getOrder: (orderId: string) => Order | undefined;
-  addOrder: (newOrder: Omit<Order, 'id' | 'createdAt'>) => Order;
+  addOrder: (newOrder: Omit<Order, 'id' | 'createdAt' | 'customerName'>) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user] = useState<User | null>(MOCK_USER);
+  const [user, setUser] = useState<User | null>(null); // Start logged out
   const [orders, setOrders] = useState<Order[]>(MOCK_INITIAL_ORDERS);
+
+  const login = useCallback(() => {
+    setUser(MOCK_USER);
+  }, []);
+
+  const logout = useCallback(() => {
+    setUser(null);
+  }, []);
 
   const getOrder = useCallback((orderId: string) => {
     return orders.find(order => order.id === orderId);
   }, [orders]);
   
-  const addOrder = (newOrderData: Omit<Order, 'id' | 'createdAt'>): Order => {
+  const addOrder = (newOrderData: Omit<Order, 'id' | 'createdAt' | 'customerName'>): Order => {
+    if (!user) {
+      throw new Error("User must be logged in to place an order.");
+    }
     const newOrder: Order = {
       ...newOrderData,
       id: `WHG-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
       createdAt: new Date(),
+      customerName: user.name,
     };
     setOrders(prevOrders => [newOrder, ...prevOrders]);
     return newOrder;
@@ -39,7 +53,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
-  const value = { user, orders, getOrder, addOrder, updateOrderStatus };
+  const value = { user, login, logout, orders, getOrder, addOrder, updateOrderStatus };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

@@ -7,6 +7,8 @@ import OrderPage from './pages/OrderPage';
 import TrackingPage from './pages/TrackingPage';
 import AdminPage from './pages/AdminPage';
 import AccountPage from './pages/AccountPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -23,6 +25,8 @@ function App() {
               <Route path="/track/:orderId" element={<TrackingPage />} />
               <Route path="/account" element={<AccountPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
             </Routes>
           </main>
           <Footer />

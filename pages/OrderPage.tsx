@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { MOCK_SERVICES } from '../constants';
@@ -26,7 +27,14 @@ const OrderPage: React.FC = () => {
     const [hasStainTreatment, setHasStainTreatment] = useState(false);
     
     const navigate = useNavigate();
-    const { addOrder } = useApp();
+    const { addOrder, user } = useApp();
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/login', { replace: true });
+        }
+    }, [user, navigate]);
+
 
     const updateQuantity = (serviceId: string, quantity: number) => {
         const service = MOCK_SERVICES.find(s => s.id === serviceId);
@@ -48,7 +56,6 @@ const OrderPage: React.FC = () => {
 
     const handleConfirmOrder = () => {
         const newOrder = addOrder({
-            customerName: 'Chidi Nwosu', // Mocked user
             pickupAddress,
             pickupDate,
             pickupTimeSlot,
@@ -60,6 +67,10 @@ const OrderPage: React.FC = () => {
         });
         navigate(`/track/${newOrder.id}`);
     };
+    
+    if (!user) {
+        return null; // Render nothing while redirecting
+    }
 
     return (
         <div className="bg-slate-50 py-12">

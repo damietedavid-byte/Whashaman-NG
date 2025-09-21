@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import { LogoIcon, MenuIcon, CloseIcon } from './IconComponents';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useApp();
 
   const navLinkClasses = "text-gray-600 hover:text-whasha-blue transition-colors pb-1 border-b-2 border-transparent";
   const activeNavLinkClasses = "text-whasha-blue border-whasha-blue";
@@ -31,7 +33,11 @@ const Header: React.FC = () => {
             {navLinks}
           </nav>
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/account" className="text-gray-600 hover:text-whasha-blue transition-colors">Log In</Link>
+            {user ? (
+               <Link to="/account" className="text-gray-600 hover:text-whasha-blue transition-colors">My Account</Link>
+            ) : (
+               <Link to="/login" className="text-gray-600 hover:text-whasha-blue transition-colors">Log In</Link>
+            )}
             <Link to="/order" className="bg-whasha-yellow text-slate-900 font-semibold px-5 py-2.5 rounded-full hover:bg-amber-300 transition-all shadow-sm">
               Schedule Pickup
             </Link>
@@ -48,7 +54,11 @@ const Header: React.FC = () => {
           <div className="px-4 pt-2 pb-4 flex flex-col space-y-4">
             {navLinks}
             <div className="border-t pt-4 flex flex-col space-y-3">
-               <Link to="/account" className="text-center w-full bg-slate-100 text-slate-800 font-semibold px-4 py-2 rounded-full hover:bg-slate-200 transition-all">Log In</Link>
+              {user ? (
+                 <Link to="/account" className="text-center w-full bg-slate-100 text-slate-800 font-semibold px-4 py-2 rounded-full hover:bg-slate-200 transition-all">My Account</Link>
+              ) : (
+                 <Link to="/login" className="text-center w-full bg-slate-100 text-slate-800 font-semibold px-4 py-2 rounded-full hover:bg-slate-200 transition-all">Log In</Link>
+              )}
                 <Link to="/order" className="text-center w-full bg-whasha-yellow text-slate-900 font-semibold px-4 py-2 rounded-full hover:bg-amber-300 transition-all">
                   Schedule Pickup
                 </Link>

@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Order } from '../types';
 
@@ -25,10 +25,22 @@ const OrderHistoryCard: React.FC<{order: Order}> = ({ order }) => (
 );
 
 const AccountPage: React.FC = () => {
-  const { user, orders } = useApp();
+  const { user, orders, logout } = useApp();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   if (!user) {
-    return <div>Please log in.</div>;
+    return null; // Render nothing while redirecting
   }
 
   return (
@@ -41,9 +53,14 @@ const AccountPage: React.FC = () => {
                     <h2 className="text-2xl font-semibold">{user.name}</h2>
                     <p className="text-slate-500 mt-2">{user.email}</p>
                     <p className="text-slate-500">{user.phone}</p>
-                    <button className="mt-4 w-full bg-slate-100 text-slate-800 font-semibold py-2 rounded-full hover:bg-slate-200">
-                        Edit Profile
-                    </button>
+                    <div className="flex flex-col space-y-2 mt-4">
+                        <button className="w-full bg-slate-100 text-slate-800 font-semibold py-2 rounded-full hover:bg-slate-200">
+                            Edit Profile
+                        </button>
+                        <button onClick={handleLogout} className="w-full bg-red-100 text-red-800 font-semibold py-2 rounded-full hover:bg-red-200">
+                            Log Out
+                        </button>
+                    </div>
                 </div>
             </div>
             <div className="md:col-span-2">
